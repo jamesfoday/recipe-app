@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sales Records</title>
+  <style>
+    /* Reset some defaults */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f9fafb;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background-color: #4caf50;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border: 2px solid white;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    nav a:hover {
+      background-color: white;
+      color: #4caf50;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      flex-grow: 1;
+    }
+
+    h1 {
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: #2f855a;
+    }
+
+    hr {
+      border: none;
+      height: 2px;
+      background: #c6f6d5;
+      margin-bottom: 2rem;
+      width: 60px;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 2px;
+    }
+
+    /* Placeholder content container */
+    .content {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      min-height: 300px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      nav {
+        justify-content: center;
+      }
+      nav a {
+        padding: 0.5rem 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{% url 'logout' %}">Logout</a>
+  </nav>
+
+  <main>
+    <h1>Search for Sales Records</h1>
+    <hr />
+    <div class="content">
+      <!-- Your future search form or records content will go here -->
+      <p>Welcome! Use this page to search for your sales records.</p>
+    </div>
+  </main>
+</body>
+</html>

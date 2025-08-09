@@ -6,6 +6,7 @@
     <meta charset="UTF-8" />
     <title>Welcome to Recipe App2</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -32,6 +33,7 @@
 </head>
 <body>
     <header>
+     <a href="{% url 'login' %}">Login</a>
         <h1>Welcome to the Recipe App!</h1>
         <p>Discover and share your favorite recipes.</p>
         <a href="{% url 'recipes:list' %}">Browse Recipes</a>

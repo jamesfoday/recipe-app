@@ -17,6 +17,7 @@ CREATED_APPS = [
     "apps.recipes",
     "apps.ingredients",
     "apps.users",
+     "apps.sales", 
 ]
 
 THIRD_PARTY_APPS = []
@@ -65,5 +66,13 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+
+LOGIN_URL = '/login/'
+
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
