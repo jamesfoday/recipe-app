@@ -36,5 +36,4 @@ Filters (e.g., {{ value|lower }}) modify variables for display.
 
 Custom template tags and filters can be created to extend functionality.
 
-vbnet
-Copy
+

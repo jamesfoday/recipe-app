@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Ingredients List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 2rem auto;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: #f0f0f0;
+            border-radius: 6px;
+        }
+        a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        a:hover {
+            color: #007acc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ingredients</h1>
+    <ul>
+        {% for ingredient in object_list %}
+            <li>
+                <a href="{% url 'ingredients:detail' ingredient.pk %}">
+                    {{ ingredient.name }} — {{ ingredient.quantity }}
+                </a>
+            </li>
+        {% empty %}
+            <li>No ingredients available.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

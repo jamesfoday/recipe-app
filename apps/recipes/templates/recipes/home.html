@@ -1,10 +1,64 @@
+
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Recipe App Home</title>
+    <meta charset="UTF-8" />
+    <title>Recipes List</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background: #fff;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+      .recipe-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+      .recipe-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+        cursor: pointer;
+        text-align: center;
+        padding: 1rem;
+      }
+      .recipe-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+      }
+      .recipe-card img {
+        max-width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 6px;
+      }
+      .recipe-name {
+        margin-top: 1rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: #333;
+      }
+    </style>
 </head>
 <body>
-  <h1>Welcome to the Recipe App!</h1>
+    <h1>All Recipes</h1>
+    <div class="recipe-list">
+        {% for recipe in object_list %}
+            <div class="recipe-card" onclick="window.location.href='{{ recipe.get_absolute_url }}'">
+                <img src="{{ recipe.pic.url }}" alt="{{ recipe.name }}" />
+                <div class="recipe-name">{{ recipe.name }}</div>
+            </div>
+        {% empty %}
+            <p>No recipes found.</p>
+        {% endfor %}
+    </div>
 </body>
 </html>

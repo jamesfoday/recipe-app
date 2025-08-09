@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Recipe App2</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 2rem;
+        background: #f9f9f9;
+      }
+      header {
+        margin-bottom: 2rem;
+      }
+      a {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 1.2rem;
+      }
+      a:hover {
+        background-color: #45a049;
+      }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Recipe App!</h1>
+        <p>Discover and share your favorite recipes.</p>
+        <a href="{% url 'recipes:list' %}">Browse Recipes</a>
+    </header>
+</body>
+</html>

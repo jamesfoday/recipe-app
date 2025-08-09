@@ -1,4 +1,7 @@
 from django.contrib import admin
 from .models import Ingredient
 
-admin.site.register(Ingredient)
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+
