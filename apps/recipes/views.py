@@ -4,6 +4,61 @@ from .models import Recipe
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from .forms import RecipeSearchForm
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from .utils import get_chart
+import pandas as pd  # fixed import alias
+
+def search_recipes(request):
+    form = RecipeSearchForm(request.GET or None)
+    recipes = None
+    chart = None
+
+    if form.is_valid():
+        name = form.cleaned_data.get('name')
+        ingredient_name = form.cleaned_data.get('ingredient')
+        max_time = form.cleaned_data.get('max_cooking_time')
+        difficulty = form.cleaned_data.get('difficulty')
+        chart_type = form.cleaned_data.get('chart_type')  # get from form cleaned_data
+
+        qs = Recipe.objects.all()
+
+        if name:
+            qs = qs.filter(name__icontains=name)
+        if ingredient_name:
+            qs = qs.filter(recipe_ingredients__ingredient__name__icontains=ingredient_name).distinct()
+        if max_time is not None:
+            qs = qs.filter(cooking_time__lte=max_time)
+        if difficulty:
+            qs = qs.filter(difficulty__iexact=difficulty)
+
+        if qs.exists():
+            recipes = qs
+
+            # Data for bar and pie charts: recipes per difficulty category
+            category_data = qs.values('difficulty').annotate(count=Count('id')).order_by('difficulty')
+            category_df = pd.DataFrame(list(category_data))
+            category_df.rename(columns={'difficulty': 'category'}, inplace=True)
+
+            # Data for line chart: recipes added over time (requires 'created' datetime field)
+            # If no 'created' field, skip this or add one in your model
+            date_data = qs.annotate(date_added=TruncDate('created')).values('date_added').annotate(count=Count('id')).order_by('date_added')
+            date_df = pd.DataFrame(list(date_data))
+
+            # Select data for chart based on type
+            if chart_type in ['bar', 'pie']:
+                chart = get_chart(chart_type, category_df, labels=category_df['category'].tolist())
+            elif chart_type == 'line' and not date_df.empty:
+                chart = get_chart(chart_type, date_df)
+
+    context = {
+        'form': form,
+        'recipes': recipes,
+        'chart': chart,
+    }
+    return render(request, 'recipes/search_results.html', context)
+
 
 def login_view(request):
     error_message = None
@@ -11,30 +66,23 @@ def login_view(request):
 
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
-
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('sales:records')
+                return redirect('recipes:home')
         else:
             error_message = 'Ooops... something went wrong.'
 
-    # Add id attribute for password toggle JS
     form.fields['password'].widget.attrs.update({'id': 'password'})
 
-    context = {
-        'form': form,
-        'error_message': error_message,
-    }
-    return render(request, 'auth/login.html', context)
+    return render(request, 'auth/login.html', {'form': form, 'error_message': error_message})
 
 
 @login_required(login_url='/login/')
 def home(request):
-    # You can add logic to fetch recipes if needed
     return render(request, 'recipes/home.html')
 
 

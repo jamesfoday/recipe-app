@@ -111,6 +111,25 @@
         color: #777;
         grid-column: 1 / -1;
       }
+
+    /* Basic styling for the buttons container */
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin: 1rem;
+    }
+    .button-container a {
+      padding: 0.5rem 1rem;
+      background-color: #4caf50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .button-container a:hover {
+      background-color: #45a049;
+    }  
     </style>
 </head>
 <body>
@@ -124,6 +143,11 @@
 
   <main>
     <h1>All Recipes</h1>
+
+     <div class="button-container">
+    <a href="{% url 'sales:records' %}">Sales</a>
+    <a href="{% url 'recipes:search_recipes' %}">Search Recipes</a>
+  </div>
 
     <div class="recipe-list" role="list">
       {% for recipe in object_list %}

@@ -1,5 +1,5 @@
 from django.urls import path
-from apps.recipes.views import (
+from .views import (
     welcome,
     home,
     RecipeListView,
@@ -7,6 +7,7 @@ from apps.recipes.views import (
     login_view,
     logout_view,
     logout_success,
+    search_recipes,  # import your search view here
 )
 
 app_name = 'recipes'
@@ -14,11 +15,14 @@ app_name = 'recipes'
 urlpatterns = [
     path('', welcome, name='welcome'),
     path('home/', home, name='home'),
-    path('list/', RecipeListView.as_view(), name='list'),  # recipe list page
-    path('detail/<int:pk>/', RecipeDetailView.as_view(), name='detail'),  # recipe detail page
+    path('list/', RecipeListView.as_view(), name='list'),
+    path('detail/<int:pk>/', RecipeDetailView.as_view(), name='detail'),
 
     # Authentication routes
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('logout-success/', logout_success, name='logout_success'),
+
+    # Search route - make sure name matches the test
+      path('search/', search_recipes, name='search_recipes'),# <-- changed here
 ]
