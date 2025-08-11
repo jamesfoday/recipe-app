@@ -16,26 +16,29 @@ SECRET_KEY = env.str("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-# Add your domain or Heroku app URL here
+# Allowed hosts - add your Heroku app domain here WITHOUT protocol or trailing slash
 ALLOWED_HOSTS = [
-    'https://ancient-beyond-92376-8e2c727e00de.herokuapp.com/',  
+    'ancient-beyond-92376-8e2c727e00de.herokuapp.com',  # just the domain
+    'localhost',  # optional for local testing
 ]
 
-# Static files settings
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # directory where collectstatic will collect files
 
 # Add WhiteNoise middleware for serving static files
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise for static files
-    *MIDDLEWARE[1:],  # Keep the rest of the middleware from base.py
+    *MIDDLEWARE[1:],  # keep rest of the middleware from base.py
 ]
+
+# Use WhiteNoise's compressed manifest static files storage for better performance
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Database configuration for production (Heroku/Postgres)
 DATABASES['default'].update(
     dj_database_url.config(conn_max_age=500, ssl_require=True)
 )
 
-# Optional: Use WhiteNoise's compressed manifest static files storage for performance
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Other production-specific settings can be added here as needed
