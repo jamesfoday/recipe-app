@@ -2,12 +2,14 @@ from django.urls import path
 from .views import (
     welcome,
     home,
+    about,
     RecipeListView,
     RecipeDetailView,
     login_view,
     logout_view,
     logout_success,
     search_recipes,  # import your search view here
+    RecipeCreateView,
 )
 
 app_name = 'recipes'
@@ -25,4 +27,7 @@ urlpatterns = [
 
     # Search route - make sure name matches the test
       path('search/', search_recipes, name='search_recipes'),# <-- changed here
+    path('about/', about, name='about'),
+    path('add/', RecipeCreateView.as_view(), name='add_recipe'),
+
 ]

@@ -1,0 +1,62 @@
+/* Reset default padding and margin */
+body, ul {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Basic page styling */
+body {
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Navigation styles */
+nav {
+  background-color: #4CAF50; /* nice green */
+  padding: 10px 20px;
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover,
+nav ul li a:focus {
+  background-color: #45a049;
+  outline: none;
+}
+
+/* Main content styling */
+main {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 20px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Footer styling */
+footer {
+  text-align: center;
+  padding: 15px 0;
+  background-color: #eee;
+  margin-top: 50px;
+  font-size: 0.9rem;
+  color: #777;
+}

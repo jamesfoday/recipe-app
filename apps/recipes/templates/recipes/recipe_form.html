@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends "recipes/base.html" %}
+{% load static %}
+
+{% block title %}Add Recipe{% endblock %}
+
+{% block content %}
+<h1>Add a New Recipe</h1>
+
+<form method="post" enctype="multipart/form-data" novalidate class="recipe-form">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <button type="submit">Add Recipe</button>
+</form>
+
+<a href="{% url 'recipes:list' %}">Back to Recipe List</a>
+
+<style>
+  .recipe-form {
+    max-width: 600px;
+    margin: 1rem auto;
+    padding: 1rem 2rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  .recipe-form p {
+    margin-bottom: 1rem;
+  }
+
+  .recipe-form label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+  }
+
+  .recipe-form input[type="text"],
+  .recipe-form input[type="number"],
+  .recipe-form textarea,
+  .recipe-form select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 1rem;
+  }
+
+  .recipe-form button {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .recipe-form button:hover {
+    background-color: #45a049;
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #4caf50;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+{% endblock %}
+
+
+</html>

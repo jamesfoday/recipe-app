@@ -13,6 +13,13 @@ class RecipeAdmin(admin.ModelAdmin):
     readonly_fields = ['difficulty']
 
     def save_model(self, request, obj, form, change):
-        # Automatically calculate difficulty before saving
-        obj.difficulty = obj.calculate_difficulty()
+        # Save the object first to get a primary key
         super().save_model(request, obj, form, change)
+
+        # Calculate difficulty after save
+        difficulty = obj.calculate_difficulty()
+
+        # Update difficulty if changed
+        if obj.difficulty != difficulty:
+            obj.difficulty = difficulty
+            obj.save(update_fields=['difficulty'])

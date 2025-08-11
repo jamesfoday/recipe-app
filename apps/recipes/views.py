@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, DetailView
-from .models import Recipe
+from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .forms import RecipeSearchForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
 from django.db.models import Count
 from django.db.models.functions import TruncDate
+
+from .models import Recipe
+from .forms import RecipeSearchForm
 from .utils import get_chart
-import pandas as pd  # fixed import alias
+
+import pandas as pd
+
 
 def search_recipes(request):
     form = RecipeSearchForm(request.GET or None)
@@ -20,7 +25,7 @@ def search_recipes(request):
         ingredient_name = form.cleaned_data.get('ingredient')
         max_time = form.cleaned_data.get('max_cooking_time')
         difficulty = form.cleaned_data.get('difficulty')
-        chart_type = form.cleaned_data.get('chart_type')  # get from form cleaned_data
+        chart_type = form.cleaned_data.get('chart_type')
 
         qs = Recipe.objects.all()
 
@@ -36,17 +41,13 @@ def search_recipes(request):
         if qs.exists():
             recipes = qs
 
-            # Data for bar and pie charts: recipes per difficulty category
             category_data = qs.values('difficulty').annotate(count=Count('id')).order_by('difficulty')
             category_df = pd.DataFrame(list(category_data))
             category_df.rename(columns={'difficulty': 'category'}, inplace=True)
 
-            # Data for line chart: recipes added over time (requires 'created' datetime field)
-            # If no 'created' field, skip this or add one in your model
             date_data = qs.annotate(date_added=TruncDate('created')).values('date_added').annotate(count=Count('id')).order_by('date_added')
             date_df = pd.DataFrame(list(date_data))
 
-            # Select data for chart based on type
             if chart_type in ['bar', 'pie']:
                 chart = get_chart(chart_type, category_df, labels=category_df['category'].tolist())
             elif chart_type == 'line' and not date_df.empty:
@@ -107,3 +108,14 @@ class RecipeListView(ListView):
 class RecipeDetailView(DetailView):
     model = Recipe
     template_name = 'recipes/detail.html'
+
+
+def about(request):
+    return render(request, 'recipes/about.html')
+
+
+class RecipeCreateView(LoginRequiredMixin, CreateView):
+    model = Recipe
+    fields = ['name', 'cooking_time', 'description', 'pic']
+    template_name = 'recipes/recipe_form.html'
+    success_url = reverse_lazy('recipes:list')

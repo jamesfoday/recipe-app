@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}My Recipe App{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+<header>
+  <nav>
+    <ul style="list-style: none; display: flex; gap: 15px;">
+      <li><a href="{% url 'recipes:welcome' %}">Welcome</a></li>
+      <li><a href="{% url 'recipes:home' %}">Home</a></li>
+      <li><a href="{% url 'recipes:about' %}">About Me</a></li>
+      <li><a href="{% url 'recipes:login' %}">Login</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <p>© 2025 My Recipe App</p>
+</footer>
+
+</body>
+</html>

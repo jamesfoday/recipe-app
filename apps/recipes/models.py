@@ -20,19 +20,14 @@ class Recipe(models.Model):
             return "Medium"
         else:
             return "Hard"
+def save_model(self, request, obj, form, change):
+    super().save_model(request, obj, form, change)  # Save first to get primary key
+    # Now calculate difficulty and save again if changed
+    difficulty = obj.calculate_difficulty()
+    if obj.difficulty != difficulty:
+        obj.difficulty = difficulty
+        obj.save(update_fields=['difficulty'])
 
-    def save(self, *args, **kwargs):
-        # Save the instance first to ensure it has a primary key
-        super().save(*args, **kwargs)
-
-        # Calculate difficulty after saving
-        difficulty = self.calculate_difficulty()
-
-        # Update difficulty if it has changed to avoid recursive saves
-        if self.difficulty != difficulty:
-            self.difficulty = difficulty
-            # Update only the difficulty field to avoid recursion
-            super().save(update_fields=['difficulty'])
 
     def __str__(self):
         return self.name
