@@ -7,6 +7,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.db.models import Count
 from django.db.models.functions import TruncDate
+from django.conf import settings
+from django.http import HttpResponse
 
 from .models import Recipe
 from .forms import RecipeSearchForm
@@ -119,3 +121,18 @@ class RecipeCreateView(LoginRequiredMixin, CreateView):
     fields = ['name', 'cooking_time', 'description', 'pic']
     template_name = 'recipes/recipe_form.html'
     success_url = reverse_lazy('recipes:list')
+
+
+def staticfiles_list(request):
+    static_root = settings.STATIC_ROOT
+    files_list = []
+
+    for root, dirs, files in os.walk(static_root):
+        for file in files:
+            # Show relative path from STATIC_ROOT
+            rel_dir = os.path.relpath(root, static_root)
+            rel_file = os.path.join(rel_dir, file)
+            files_list.append(rel_file)
+
+    files_html = "<br>".join(files_list)
+    return HttpResponse(f"<h1>Static Files in {static_root}</h1><p>{files_html}</p>")
