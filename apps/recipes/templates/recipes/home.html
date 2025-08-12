@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 {% extends "recipes/base.html" %}
 {% load static %}
-
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+<img src="{% static 'images/login-bg.jpg' %}" alt="Login Background">
 {% block title %}All Recipes{% endblock %}
 
 {% block content %}
@@ -98,6 +99,7 @@
   <a href="{% url 'recipes:search_recipes' %}">Search Recipes</a>
    <a href="{% url 'recipes:add_recipe' %}">Add Recipe</a>
 </div>
+<img src="{{ recipe.pic.url }}" alt="{{ recipe.name }}">
 
 <div class="recipe-list" role="list">
   {% for recipe in object_list %}

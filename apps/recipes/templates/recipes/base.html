@@ -58,6 +58,7 @@
       <a href="{% url 'login' %}">Login</a>
     {% endif %}
   </header>
+<img src="{{ recipe.pic.url }}" alt="{{ recipe.name }}">
 
   <main>
     {% block content %}{% endblock %}

@@ -16,6 +16,7 @@
 </form>
 
 <a href="{% url 'recipes:list' %}">Back to Recipe List</a>
+<img src="{{ recipe.pic.url }}" alt="{{ recipe.name }}">
 
 <style>
   .recipe-form {
