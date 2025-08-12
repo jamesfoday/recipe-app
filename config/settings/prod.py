@@ -23,8 +23,9 @@ ALLOWED_HOSTS = [
 ]
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
+
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # directory where collectstatic will collect files
+STATIC_URL = '/static/'
 
 # Add WhiteNoise middleware for serving static files
 MIDDLEWARE = [
