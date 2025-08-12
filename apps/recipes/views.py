@@ -9,6 +9,7 @@ from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.conf import settings
 from django.http import HttpResponse
+import os
 
 from .models import Recipe
 from .forms import RecipeSearchForm
