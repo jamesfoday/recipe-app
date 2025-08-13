@@ -66,5 +66,8 @@ if USE_S3_FOR_MEDIA:
         "CacheControl": "max-age=86400",
     }
 
+    AWS_QUERYSTRING_AUTH = True
+
+
     # Public media URL
     MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
