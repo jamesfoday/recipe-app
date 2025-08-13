@@ -20,7 +20,7 @@ CREATED_APPS = [
      "apps.sales", 
 ]
 
-THIRD_PARTY_APPS = []
+THIRD_PARTY_APPS = [ "storages",]
 
 INSTALLED_APPS = [*DEFAULT_APPS, *CREATED_APPS, *THIRD_PARTY_APPS]
 
