@@ -18,11 +18,10 @@ ALLOWED_HOSTS = [
 ]
 
 # ---- Static files (WhiteNoise) ----
-# Insert WhiteNoise right after SecurityMiddleware, KEEP the rest from base.py
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    *MIDDLEWARE[1:],  # use the rest from base.py
+    *MIDDLEWARE[1:],  # keep the rest from base.py
 ]
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -43,13 +42,17 @@ if USE_S3_FOR_MEDIA:
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 
-    # IMPORTANT: set the correct region (eu-north-1 for Stockholm)
+    # Correct region (Stockholm example: eu-north-1)
     AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-north-1")
     AWS_S3_SIGNATURE_VERSION = "s3v4"
 
+    # Important for ACL-disabled buckets
     AWS_DEFAULT_ACL = None
     AWS_S3_FILE_OVERWRITE = False
     AWS_QUERYSTRING_AUTH = False
-    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400"
+    }
 
+    # Public URL for media files
     MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
