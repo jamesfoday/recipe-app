@@ -6,52 +6,50 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Read environment variables from .env file (if exists)
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("SECRET_KEY")
-
-# SECURITY WARNING: don't run with debug turaned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-# Allowed hosts - your Heroku app domain
 ALLOWED_HOSTS = [
-    'ancient-beyond-92376-8e2c727e00de.herokuapp.com',
-    'localhost',  # optional for local testing
+    "ancient-beyond-92376-8e2c727e00de.herokuapp.com",
+    "localhost",
 ]
 
-# Static files (CSS, JavaScript, Images) served by WhiteNoise
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # collectstatic output dir
-STATIC_URL = '/static/'
-
+# ---- Static files (WhiteNoise) ----
+# Insert WhiteNoise right after SecurityMiddleware, KEEP the rest from base.py
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # WhiteNoise for static files
-    *MIDDLEWARE[1:],  # keep other middleware from base.py
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    *MIDDLEWARE[1:],  # use the rest from base.py
 ]
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Use WhiteNoise's compressed manifest static files storage for better performance
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Database config for Heroku/Postgres
-DATABASES['default'].update(
+# ---- Database (Heroku) ----
+DATABASES["default"].update(
     dj_database_url.config(conn_max_age=500, ssl_require=True)
 )
 
-# ---- AWS S3 CONFIGURATION FOR MEDIA UPLOADS ----
-AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')  # From your AWS IAM user
-AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')  # From your AWS IAM user
-AWS_STORAGE_BUCKET_NAME = 'my-django-media-bucket-cf'  # Your S3 bucket name
-AWS_S3_REGION_NAME = 'eu-north-1'  # Your AWS Region (Stockholm)
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+# ---- Media on S3 ----
+USE_S3_FOR_MEDIA = True
 
-# Tell Django to use S3 for media files
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+if USE_S3_FOR_MEDIA:
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
-# Media settings
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
-MEDIA_ROOT = ''  # Not needed when using S3 storage
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 
+    # IMPORTANT: set the correct region (eu-north-1 for Stockholm)
+    AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-north-1")
+    AWS_S3_SIGNATURE_VERSION = "s3v4"
 
+    AWS_DEFAULT_ACL = None
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+
+    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/"
