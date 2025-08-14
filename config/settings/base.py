@@ -19,7 +19,7 @@ INSTALLED_APPS = [
     "apps.ingredients",
     "apps.sales",
     "apps.users",
-    # storages is only needed in prod when using S3/Cloudinary/etc.
+    # No cloud/storage apps here — only added in prod
 ]
 
 MIDDLEWARE = [
@@ -71,7 +71,7 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 
-# Media — in dev, use local filesystem
+# Default: local media storage
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

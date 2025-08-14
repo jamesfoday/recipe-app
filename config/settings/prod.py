@@ -17,9 +17,7 @@ DATABASES["default"] = dj_database_url.config(
     conn_max_age=500, ssl_require=True, default=os.getenv("DATABASE_URL")
 )
 
-# ---------------------------
 # Cloudinary for MEDIA files
-# ---------------------------
 INSTALLED_APPS += [
     "storages",
     "cloudinary",
@@ -34,9 +32,10 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
 }
 
-# Let cloudinary_storage provide absolute URLs
+# Let cloudinary_storage give full URLs
 MEDIA_URL = None
 
+# If Cloudinary URL not set but creds are, set it
 cn = os.getenv("CLOUDINARY_CLOUD_NAME")
 ck = os.getenv("CLOUDINARY_API_KEY")
 cs = os.getenv("CLOUDINARY_API_SECRET")
