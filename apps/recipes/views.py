@@ -9,9 +9,12 @@ from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
 from django.conf import settings
 from django.http import HttpResponse
-from django.core.files.storage import default_storage
 import os
 import pandas as pd
+import mimetypes
+import uuid
+
+import boto3  # <- use boto3 directly for uploads
 
 from .models import Recipe
 from .forms import RecipeSearchForm, RecipeForm
@@ -125,6 +128,57 @@ def search_recipes(request):
 
 
 # ---------------------------
+# Helpers for S3 upload
+# ---------------------------
+
+def _s3_client():
+    return boto3.client(
+        "s3",
+        region_name=os.getenv("AWS_S3_REGION_NAME")
+    )
+
+def _guess_content_type(name: str) -> str:
+    ctype, _ = mimetypes.guess_type(name)
+    return ctype or "application/octet-stream"
+
+def _upload_to_s3_and_get_key(file_obj, desired_name: str) -> str:
+    """
+    Uploads the uploaded file (InMemoryUploadedFile/TemporaryUploadedFile)
+    directly to S3 under recipes/, returns the S3 key that now exists.
+    """
+    bucket = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    region = os.getenv("AWS_S3_REGION_NAME")
+
+    # Keep it under recipes/ and avoid collisions
+    base = os.path.basename(desired_name)
+    unique = f"{uuid.uuid4().hex[:8]}_{base}"
+    key = f"recipes/{unique}"
+
+    # Read bytes (rewind in case file was read)
+    if hasattr(file_obj, "seek"):
+        try:
+            file_obj.seek(0)
+        except Exception:
+            pass
+    body = file_obj.read()
+
+    # Put to S3
+    s3 = _s3_client()
+    s3.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=body,
+        ContentType=_guess_content_type(base),
+        ServerSideEncryption="AES256"  # matches what we saw on your bucket
+    )
+
+    # Extra sanity: this will raise if missing
+    s3.head_object(Bucket=bucket, Key=key)
+
+    return key
+
+
+# ---------------------------
 # Recipe CRUD
 # ---------------------------
 
@@ -155,13 +209,11 @@ class RecipeCreateView(LoginRequiredMixin, CreateView):
         return self.form_invalid(form)
 
     def form_valid(self, form):
-        # Save model without committing file yet
         self.object = form.save(commit=False)
 
-        # Force-write uploaded file to S3 before saving
         f = form.cleaned_data.get('pic')
         if f:
-            key = default_storage.save(f"recipes/{f.name}", f)
+            key = _upload_to_s3_and_get_key(f, f.name)
             self.object.pic.name = key
 
         self.object.save()
@@ -191,10 +243,9 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         self.object = form.save(commit=False)
 
-        # If a new file uploaded, write to S3 and update key
         f = form.cleaned_data.get('pic')
         if f:
-            key = default_storage.save(f"recipes/{f.name}", f)
+            key = _upload_to_s3_and_get_key(f, f.name)
             self.object.pic.name = key
 
         self.object.save()
