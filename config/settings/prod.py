@@ -40,3 +40,10 @@ CLOUDINARY_STORAGE = {
 
 # Cloudinary returns absolute URLs; MEDIA_URL can be anything
 MEDIA_URL = "/media/"
+
+
+cn = os.getenv("CLOUDINARY_CLOUD_NAME")
+ck = os.getenv("CLOUDINARY_API_KEY")
+cs = os.getenv("CLOUDINARY_API_SECRET")
+if not os.getenv("CLOUDINARY_URL") and all([cn, ck, cs]):
+    os.environ["CLOUDINARY_URL"] = f"cloudinary://{ck}:{cs}@{cn}"
