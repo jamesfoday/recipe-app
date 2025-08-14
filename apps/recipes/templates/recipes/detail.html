@@ -1,11 +1,21 @@
-
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>{{ object.name }} - Recipe Details</title>
-  <!-- styles omitted for brevity (keep your CSS) -->
+  <style>
+    .debug {background:#fff3cd;border:1px solid #ffeeba;padding:10px;border-radius:6px;margin:10px 0;font:14px/1.4 system-ui}
+    .debug a{word-break:break-all}
+    .main-pic{max-width:600px;height:auto;display:block;margin:1rem 0}
+    .ingredients-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+    .ingredient-item{display:flex;gap:10px;align-items:center;cursor:pointer}
+    .ingredient-item img{width:50px;height:50px;border-radius:50%;object-fit:cover}
+    #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:20;align-items:center;justify-content:center}
+    #modal img{max-width:90vw;max-height:80vh}
+    .close-btn{position:absolute;top:14px;right:18px;color:#fff;font-size:32px;cursor:pointer}
+    .back-link{display:inline-block;margin-top:1rem}
+  </style>
 </head>
 <body>
   <header>
@@ -18,8 +28,22 @@
 
   <h1>{{ object.name }}</h1>
 
+  {# --- DEBUG + FALLBACK: shows the exact key and both URLs --- #}
   {% if object.pic %}
-    <img src="{{ object.pic.url }}" alt="{{ object.name }}" class="main-pic" />
+    <div class="debug">
+      <div><strong>S3 key in DB:</strong> {{ object.pic.name }}</div>
+      <div><strong>Storage URL:</strong> <a href="{{ object.pic.url }}" target="_blank">{{ object.pic.url }}</a></div>
+      <div><strong>Direct URL:</strong>
+        <a href="https://my-django-media-bucket-cf.s3.eu-north-1.amazonaws.com/{{ object.pic.name }}" target="_blank">
+          https://my-django-media-bucket-cf.s3.eu-north-1.amazonaws.com/{{ object.pic.name }}
+        </a>
+      </div>
+      <small>Click the links above. If one is 404, that key doesn’t exist in S3. If 403, bucket policy/signed-URL is needed.</small>
+    </div>
+
+    {# Try storage URL first; if 403/404 on that, the direct constructed URL will still let you test #}
+    <img src="{{ object.pic.url }}" alt="{{ object.name }}" class="main-pic"
+         onerror="this.onerror=null;this.src='https://my-django-media-bucket-cf.s3.eu-north-1.amazonaws.com/{{ object.pic.name }}';" />
   {% else %}
     <p><em>No main image uploaded.</em></p>
   {% endif %}
@@ -30,9 +54,10 @@
   <h2>Ingredients</h2>
   <div class="ingredients-list">
     {% for ri in object.recipe_ingredients.all %}
-      <div class="ingredient-item" onclick="openModal('{{ ri.ingredient.image.url }}', '{{ ri.ingredient.name }}')">
+      <div class="ingredient-item" onclick="openModal('{% if ri.ingredient.image %}{{ ri.ingredient.image.url }}{% endif %}', '{{ ri.ingredient.name }}')">
         {% if ri.ingredient.image %}
-          <img src="{{ ri.ingredient.image.url }}" alt="{{ ri.ingredient.name }}" />
+          <img src="{{ ri.ingredient.image.url }}" alt="{{ ri.ingredient.name }}"
+               onerror="this.onerror=null;this.src='https://my-django-media-bucket-cf.s3.eu-north-1.amazonaws.com/{{ ri.ingredient.image.name }}';" />
         {% else %}
           <div style="width:50px;height:50px;border-radius:50%;background:#ddd;"></div>
         {% endif %}
@@ -45,18 +70,19 @@
 
   <a href="{% url 'recipes:list' %}" class="back-link">← Back to Recipes List</a>
 
-  <!-- Modal HTML -->
+  <!-- Modal -->
   <div id="modal">
     <span class="close-btn" onclick="closeModal()">&times;</span>
     <img id="modal-img" alt="Ingredient Image">
-    <div id="modal-caption"></div>
+    <div id="modal-caption" style="color:#fff;text-align:center;margin-top:8px"></div>
   </div>
 
   <script>
     function openModal(src, caption) {
-      document.getElementById('modal').style.display = 'block';
+      if(!src){return;}
+      document.getElementById('modal').style.display = 'flex';
       document.getElementById('modal-img').src = src;
-      document.getElementById('modal-caption').textContent = caption;
+      document.getElementById('modal-caption').textContent = caption || '';
     }
     function closeModal() {
       document.getElementById('modal').style.display = 'none';
