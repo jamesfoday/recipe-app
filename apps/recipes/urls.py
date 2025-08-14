@@ -1,5 +1,4 @@
 from django.urls import path
-from .views import staticfiles_list
 from .views import (
     welcome,
     home,
@@ -30,6 +29,5 @@ urlpatterns = [
       path('search/', search_recipes, name='search_recipes'),# <-- changed here
     path('about/', about, name='about'),
     path('add/', RecipeCreateView.as_view(), name='add_recipe'),
-    path('staticfiles-list/', staticfiles_list, name='staticfiles_list'),
 
 ]

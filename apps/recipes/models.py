@@ -6,8 +6,8 @@ class Recipe(models.Model):
     name = models.CharField(max_length=200)
     cooking_time = models.PositiveIntegerField(help_text='Cooking time in minutes', null=True, blank=True)
     description = models.TextField(blank=True)
-    pic = models.ImageField(upload_to='recipes', default='no_picture.jpg', blank=True)
-    difficulty = models.CharField(max_length=20, blank=True, editable=False)  # Calculated automatically
+    pic = models.ImageField(upload_to='recipes/', blank=True)
+    difficulty = models.CharField(max_length=10, choices=[('Easy','Easy'),('Medium','Medium'),('Hard','Hard')], default='Easy')
     created = models.DateTimeField(auto_now_add=True)  # Automatically set when created
 
     def calculate_difficulty(self):

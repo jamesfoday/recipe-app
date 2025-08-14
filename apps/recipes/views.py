@@ -1,87 +1,19 @@
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.db.models.functions import TruncDate
-from django.conf import settings
-from django.http import HttpResponse
-import os
-import pandas as pd
-import mimetypes
-import uuid
-
-import boto3  # <- use boto3 directly for uploads
 
 from .models import Recipe
-from .forms import RecipeSearchForm, RecipeForm
+from .forms import RecipeSearchForm
 from .utils import get_chart
 
+import pandas as pd
 
-# ---------------------------
-# Auth & basic pages
-# ---------------------------
-
-def login_view(request):
-    error_message = None
-    form = AuthenticationForm()
-
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect('recipes:home')
-        else:
-            error_message = 'Ooops... something went wrong.'
-
-    form.fields['password'].widget.attrs.update({'id': 'password'})
-    return render(request, 'auth/login.html', {'form': form, 'error_message': error_message})
-
-
-def logout_view(request):
-    logout(request)
-    return redirect('logout_success')
-
-
-def logout_success(request):
-    return render(request, 'auth/success.html')
-
-
-def welcome(request):
-    return render(request, 'welcome.html')
-
-
-@login_required(login_url='/login/')
-def home(request):
-    return render(request, 'recipes/home.html')
-
-
-def about(request):
-    return render(request, 'recipes/about.html')
-
-
-def staticfiles_list(request):
-    static_root = settings.STATIC_ROOT
-    files_list = []
-    for root, dirs, files in os.walk(static_root):
-        for file in files:
-            rel_dir = os.path.relpath(root, static_root)
-            rel_file = os.path.join(rel_dir, file)
-            files_list.append(rel_file)
-    files_html = "<br>".join(files_list)
-    return HttpResponse(f"<h1>Static Files in {static_root}</h1><p>{files_html}</p>")
-
-
-# ---------------------------
-# Search
-# ---------------------------
 
 def search_recipes(request):
     form = RecipeSearchForm(request.GET or None)
@@ -100,9 +32,7 @@ def search_recipes(request):
         if name:
             qs = qs.filter(name__icontains=name)
         if ingredient_name:
-            qs = qs.filter(
-                recipe_ingredients__ingredient__name__icontains=ingredient_name
-            ).distinct()
+            qs = qs.filter(recipe_ingredients__ingredient__name__icontains=ingredient_name).distinct()
         if max_time is not None:
             qs = qs.filter(cooking_time__lte=max_time)
         if difficulty:
@@ -123,142 +53,69 @@ def search_recipes(request):
             elif chart_type == 'line' and not date_df.empty:
                 chart = get_chart(chart_type, date_df)
 
-    context = {'form': form, 'recipes': recipes, 'chart': chart}
+    context = {
+        'form': form,
+        'recipes': recipes,
+        'chart': chart,
+    }
     return render(request, 'recipes/search_results.html', context)
 
 
-# ---------------------------
-# Helpers for S3 upload
-# ---------------------------
+def login_view(request):
+    error_message = None
+    form = AuthenticationForm()
 
-def _s3_client():
-    return boto3.client(
-        "s3",
-        region_name=os.getenv("AWS_S3_REGION_NAME")
-    )
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('recipes:home')
+        else:
+            error_message = 'Ooops... something went wrong.'
 
-def _guess_content_type(name: str) -> str:
-    ctype, _ = mimetypes.guess_type(name)
-    return ctype or "application/octet-stream"
+    form.fields['password'].widget.attrs.update({'id': 'password'})
 
-def _upload_to_s3_and_get_key(file_obj, desired_name: str) -> str:
-    """
-    Uploads the uploaded file (InMemoryUploadedFile/TemporaryUploadedFile)
-    directly to S3 under recipes/, returns the S3 key that now exists.
-    """
-    bucket = os.getenv("AWS_STORAGE_BUCKET_NAME")
-    region = os.getenv("AWS_S3_REGION_NAME")
-
-    # Keep it under recipes/ and avoid collisions
-    base = os.path.basename(desired_name)
-    unique = f"{uuid.uuid4().hex[:8]}_{base}"
-    key = f"recipes/{unique}"
-
-    # Read bytes (rewind in case file was read)
-    if hasattr(file_obj, "seek"):
-        try:
-            file_obj.seek(0)
-        except Exception:
-            pass
-    body = file_obj.read()
-
-    # Put to S3
-    s3 = _s3_client()
-    s3.put_object(
-        Bucket=bucket,
-        Key=key,
-        Body=body,
-        ContentType=_guess_content_type(base),
-        ServerSideEncryption="AES256"  # matches what we saw on your bucket
-    )
-
-    # Extra sanity: this will raise if missing
-    s3.head_object(Bucket=bucket, Key=key)
-
-    return key
+    return render(request, 'auth/login.html', {'form': form, 'error_message': error_message})
 
 
-# ---------------------------
-# Recipe CRUD
-# ---------------------------
+@login_required(login_url='/login/')
+def home(request):
+    return render(request, 'recipes/home.html')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('logout_success')
+
+
+def logout_success(request):
+    return render(request, 'auth/success.html')
+
+
+def welcome(request):
+    return render(request, 'welcome.html')
+
 
 class RecipeListView(ListView):
     model = Recipe
     template_name = 'recipes/home.html'
-    context_object_name = 'recipes'
-    paginate_by = 10
 
 
 class RecipeDetailView(DetailView):
     model = Recipe
     template_name = 'recipes/detail.html'
-    context_object_name = 'recipe'  # so templates can use {{ recipe.pic.url }}
+
+
+def about(request):
+    return render(request, 'recipes/about.html')
 
 
 class RecipeCreateView(LoginRequiredMixin, CreateView):
     model = Recipe
-    form_class = RecipeForm
+    fields = ['name', 'cooking_time', 'description', 'pic']
     template_name = 'recipes/recipe_form.html'
     success_url = reverse_lazy('recipes:list')
-    login_url = '/login/'
-
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST, request.FILES)
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
-
-    def form_valid(self, form):
-        self.object = form.save(commit=False)
-
-        f = form.cleaned_data.get('pic')
-        if f:
-            key = _upload_to_s3_and_get_key(f, f.name)
-            self.object.pic.name = key
-
-        self.object.save()
-        return redirect(self.get_success_url())
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['recipe'] = None
-        return context
-
-
-class RecipeUpdateView(LoginRequiredMixin, UpdateView):
-    model = Recipe
-    form_class = RecipeForm
-    template_name = 'recipes/recipe_form.html'
-    success_url = reverse_lazy('recipes:list')
-    context_object_name = 'recipe'
-    login_url = '/login/'
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        form = self.form_class(request.POST, request.FILES, instance=self.object)
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
-
-    def form_valid(self, form):
-        self.object = form.save(commit=False)
-
-        f = form.cleaned_data.get('pic')
-        if f:
-            key = _upload_to_s3_and_get_key(f, f.name)
-            self.object.pic.name = key
-
-        self.object.save()
-        return redirect(self.get_success_url())
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['recipe'] = self.object
-        return context
-
-
-class RecipeDeleteView(LoginRequiredMixin, DeleteView):
-    model = Recipe
-    template_name = 'recipes/recipe_confirm_delete.html'
-    success_url = reverse_lazy('recipes:list')
-    login_url = '/login/'
