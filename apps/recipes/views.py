@@ -9,6 +9,7 @@ from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
 from django.conf import settings
 from django.http import HttpResponse
+from django.core.files.storage import default_storage
 import os
 import pandas as pd
 
@@ -147,9 +148,28 @@ class RecipeCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('recipes:list')
     login_url = '/login/'
 
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST, request.FILES)
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+    def form_valid(self, form):
+        # Save model without committing file yet
+        self.object = form.save(commit=False)
+
+        # Force-write uploaded file to S3 before saving
+        f = form.cleaned_data.get('pic')
+        if f:
+            key = default_storage.save(f"recipes/{f.name}", f)
+            self.object.pic.name = key
+
+        self.object.save()
+        return redirect(self.get_success_url())
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['recipe'] = None  # prevents preview crash on create
+        context['recipe'] = None
         return context
 
 
@@ -161,9 +181,28 @@ class RecipeUpdateView(LoginRequiredMixin, UpdateView):
     context_object_name = 'recipe'
     login_url = '/login/'
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.form_class(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+
+        # If a new file uploaded, write to S3 and update key
+        f = form.cleaned_data.get('pic')
+        if f:
+            key = default_storage.save(f"recipes/{f.name}", f)
+            self.object.pic.name = key
+
+        self.object.save()
+        return redirect(self.get_success_url())
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['recipe'] = self.object  # for preview on edit
+        context['recipe'] = self.object
         return context
 
 
