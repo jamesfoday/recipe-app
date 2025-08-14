@@ -19,7 +19,7 @@ INSTALLED_APPS = [
     "apps.ingredients",
     "apps.sales",
     "apps.users",
-    "storages",
+    # storages is only needed in prod when using S3/Cloudinary/etc.
 ]
 
 MIDDLEWARE = [
@@ -66,10 +66,12 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR/"static"] if (BASE_DIR/"static").exists() else []
+STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 
+# Media — in dev, use local filesystem
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
