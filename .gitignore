@@ -1,18 +1,27 @@
-# Python
+# Python cache / compiled files
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 *.egg-info/
+*.egg
+.eggs/
+
+# Environment files
 *.env
 .env
-*.sqlite3
-
-# Virtual environment
+.env.*
 .venv/
 venv/
 
-# Django static and media files
+# Databases
+*.sqlite3
+db.sqlite3
+
+# Django static and media
 /static/
 media/
+staticfiles/
 
 # Logs
 *.log
@@ -21,3 +30,15 @@ media/
 .vscode/
 .idea/
 *.swp
+
+# macOS system files
+.DS_Store
+
+# Coverage / test reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+
+# Pytest cache
+.pytest_cache/
