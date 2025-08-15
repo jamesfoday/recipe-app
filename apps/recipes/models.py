@@ -20,6 +20,10 @@ class Recipe(models.Model):
             return "Medium"
         else:
             return "Hard"
+
+    def get_absolute_url(self):
+        # matches the URL above (namespace: recipes, name: detail)
+        return reverse("recipes:detail", args=[self.pk])    
 def save_model(self, request, obj, form, change):
     super().save_model(request, obj, form, change)  # Save first to get primary key
     # Now calculate difficulty and save again if changed
